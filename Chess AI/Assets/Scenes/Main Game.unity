@@ -293,6 +293,11 @@ PrefabInstance:
       propertyPath: simulatedTurns
       value: 4
       objectReference: {fileID: 0}
+    - target: {fileID: 1540672495987867342, guid: 34c6af684927f054e8e631c734e8c30f,
+        type: 3}
+      propertyPath: rollingEvaluation
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1540672496012123604, guid: 34c6af684927f054e8e631c734e8c30f,
         type: 3}
       propertyPath: m_IsActive

@@ -973,6 +973,24 @@ public class SimpleChess
         return move;
     }
 }
+public class AIState
+{
+    public SimpleChess board;
+    public List<string> transpositionTable;
+    public List<ChessAI.MTDNode> nodes;
+    public float currentGuess;
+    public int depth;
+
+    public AIState(SimpleChess board, float currentGuess)
+    {
+        this.board = board;
+        this.transpositionTable = new List<string>();
+        this.nodes = new List<ChessAI.MTDNode>();
+        this.currentGuess = currentGuess;
+        this.depth = 1;
+    }
+
+}
 public class ChessAI
 {
     public struct MTDNode
@@ -993,6 +1011,7 @@ public class ChessAI
         public float upperBound;
         public float lowerBound;
     }
+
 
     public ChessAI(int simulatedTurns, int color, float grainSize, float PieceWeight, float CenterWeight, float DevelopmentWeight, float PressureWeight, float KingWeight, float PawnWeight)
     {
@@ -1025,6 +1044,16 @@ public class ChessAI
             firstGuess = MTD(board, firstGuess, d, transpositionTable, nodes);
         }
         board.fitness = firstGuess;
+    }
+    public void IterativeDeepening(AIState state, CancellationToken token)
+    {
+        if (token.IsCancellationRequested)
+        {
+            token.ThrowIfCancellationRequested();
+        }
+        state.currentGuess = MTD(state.board, state.currentGuess, state.depth, state.transpositionTable, state.nodes);
+        state.board.fitness = state.currentGuess;
+        state.depth++;
     }
     public void IterativeDeepening(SimpleChess board)
     {
@@ -1069,6 +1098,7 @@ public class ChessAI
         return fitness;
     }
     int TTU;
+
     float AlphaBeta(SimpleChess board, bool ourTurn, float alpha, float beta, int depth, List<string> transpositionTable, List<MTDNode> nodes)
     {
         string boardString = board.toString();
@@ -1257,7 +1287,7 @@ public class ChessAI
         return fitness;
     }
 
-    float CalculateFitness(SimpleChess board)
+    public float CalculateFitness(SimpleChess board)
     {
         float fitness = 0;
         List<SimpleChess.Coordinate> newBoard = new List<SimpleChess.Coordinate>(board.getPieces(1));
@@ -1265,7 +1295,7 @@ public class ChessAI
         foreach (SimpleChess.Coordinate location in newBoard)
         {
             int piece = board.testSpace(location);
-            if(System.Math.Abs(piece) > 6 && piece != 0)
+            if (System.Math.Abs(piece) > 6 && piece != 0)
             {
                 continue;
             }

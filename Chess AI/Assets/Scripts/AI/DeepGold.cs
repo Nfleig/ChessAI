@@ -10,24 +10,7 @@ using static ChessAI;
 
 public class DeepGold : MonoBehaviour
 {
-    public struct MTDNode
-    {
-        public MTDNode(SimpleChess board, string boardString)
-        {
-            this.board = board;
-            this.boardString = boardString;
-            this.upperBound = 0;
-            this.lowerBound = 0;
-            this.hasUpper = false;
-            this.hasLower = false;
-        }
-        public string boardString;
-        public SimpleChess board;
-        public bool hasUpper;
-        public bool hasLower;
-        public float upperBound;
-        public float lowerBound;
-    }
+    
     public GameManager manager;
     public int simulatedTurns;
     private SimpleChess currentBoard;
@@ -55,6 +38,7 @@ public class DeepGold : MonoBehaviour
     int moveNum = 0;
     public bool started = false;
     public bool randomFirstMove = false;
+    public bool rollingEvaluation = false;
     public Gene gene;
 
     void Awake()
@@ -149,6 +133,14 @@ public class DeepGold : MonoBehaviour
             }
             if (thinking)
             {
+                if (moveNum == calcMoves.Count && rollingEvaluation)
+                {
+                    moveNum = 0;
+                    foreach(Task task in tasks)
+                    {
+
+                    }
+                }
                 MoveCounter.text = "Calculating move " + (moveNum + 1) + " / " + (calcMoves.Count) + ":\n" + SimpleChess.toChessNotation(calcMoves[moveNum], displayLetters);
                 NodeCounter.text = AI.getNodeCount() + " nodes calculated";
                 return;
@@ -216,6 +208,7 @@ public class DeepGold : MonoBehaviour
     }
     Stopwatch timer = new Stopwatch();
     List<Task> tasks = new List<Task>();
+    List<AIState> states = new List<AIState>();
     private double lastThreadCompleted = 0;
     public void TakeTurn()
     {
@@ -237,12 +230,24 @@ public class DeepGold : MonoBehaviour
         foreach (SimpleChess move in calcMoves)
         {
             thinking = true;
-            Task calcTask = Task.Factory.StartNew(() => { 
-                AI.IterativeDeepening(move, token);
-                /*print("finished move " + moveNum);*/
-                if (Interlocked.Increment(ref moveNum) == calcMoves.Count) { thinking = false; }
-                Interlocked.Exchange(ref lastThreadCompleted, timer.ElapsedMilliseconds);
-            }, token);
+            Task calcTask;
+            if (rollingEvaluation)
+            {
+                AIState state = new AIState(move, AI.CalculateFitness(move));
+                calcTask = Task.Factory.StartNew(() => {
+                    AI.IterativeDeepening(state, token);
+                    /*print("finished move " + moveNum);*/
+                    Interlocked.Increment(ref moveNum);
+                }, token);
+            }
+            else
+            {
+                calcTask = Task.Factory.StartNew(() => {
+                    AI.IterativeDeepening(move, token);
+                    /*print("finished move " + moveNum);*/
+                    if (Interlocked.Increment(ref moveNum) == calcMoves.Count) { thinking = false; }
+                }, token);
+            }
             tasks.Add(calcTask);
         }
     }
