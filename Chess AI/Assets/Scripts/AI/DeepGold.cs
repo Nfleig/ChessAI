@@ -32,6 +32,7 @@ public class DeepGold : MonoBehaviour
     public float PressureWeight;
     public float KingWeight;
     public float PawnWeight;
+    public float PawnAdvancementWeight;
     private bool displayLetters;
 
     List<SimpleChess> calcMoves;
@@ -44,6 +45,7 @@ public class DeepGold : MonoBehaviour
     void Awake()
     {
         AI = new ChessAI(simulatedTurns, color, grainSize, PieceWeight, CenterWeight, DevelopmentWeight, PressureWeight, KingWeight, PawnWeight);
+        AI.setFitnessAlgorithm(CalculateFitness);
         turnTimer = turnDelay;
         displayLetters = manager.displayLetters;
     }
@@ -261,5 +263,142 @@ public class DeepGold : MonoBehaviour
         KingWeight = gene.Weights[4];
         PawnWeight = gene.Weights[5];
         AI.setWeights(PieceWeight, CenterWeight, DevelopmentWeight, PressureWeight, KingWeight, PawnWeight);
+    }
+
+    float CalculateEndgameFitness(SimpleChess board)
+    {
+        float fitness = 0;
+
+        List<SimpleChess.Coordinate> newBoard = new List<SimpleChess.Coordinate>(board.getPieces(1));
+        newBoard.AddRange(board.getPieces(-1));
+        foreach (SimpleChess.Coordinate location in newBoard)
+        {
+            int piece = board.getPiece(location);
+            if (System.Math.Abs(piece) == 1)
+            {
+                if (System.Math.Sign(piece) == color)
+                {
+                    if (color == 1)
+                    {
+                        fitness += location.y * PawnAdvancementWeight;
+                    }
+                    else
+                    {
+                        fitness += (7 - location.y) * PawnAdvancementWeight;
+                    }
+                }
+                else
+                {
+                    if (color == 1)
+                    {
+                        fitness -= location.y * PawnAdvancementWeight;
+                    }
+                    else
+                    {
+                        fitness -= (7 - location.y) * PawnAdvancementWeight;
+                    }
+                }
+            }
+
+        }
+
+        return fitness;
+    }
+
+    //Fitness algorithm based on chess board evaluation guide at https://chessfox.com/example-of-the-complete-evaluation-process-of-chess-a-chess-position/
+    public float CalculateFitness(SimpleChess board)
+    {
+        float fitness = 0;
+        List<SimpleChess.Coordinate> newBoard = new List<SimpleChess.Coordinate>(board.getPieces(1));
+        newBoard.AddRange(board.getPieces(-1));
+        foreach (SimpleChess.Coordinate location in newBoard)
+        {
+            int piece = board.testSpace(location);
+            if (System.Math.Abs(piece) > 6 && piece != 0)
+            {
+                continue;
+            }
+            if (System.Math.Abs(piece) == 1)
+            {
+                int pawnScore = 0;
+                if (board.isThreatened(location, color))
+                {
+                    pawnScore += 2;
+                }
+                if (board.testSpace(location.x + 1, location.y + piece) * piece < 0 || board.testSpace(location.x - 1, location.y + piece) * piece < 0)
+                {
+                    pawnScore += 3;
+                }
+                fitness += pawnScore * (PawnWeight * color * piece);
+            }
+            else if (System.Math.Abs(piece) == 6)
+            {
+                int protectionScore = 0;
+                if (location.x < 3)
+                {
+                    protectionScore = 3 - location.x;
+                }
+                else if (location.x > 4)
+                {
+                    protectionScore = location.x - 4;
+                }
+                else
+                {
+                    protectionScore = 0;
+                }
+                if (location.y < 3)
+                {
+                    protectionScore = 3 - location.y;
+                }
+                else if (location.y > 4)
+                {
+                    protectionScore = location.y - 4;
+                }
+                else
+                {
+                    protectionScore = 0;
+                }
+                fitness += protectionScore * (1 / 6) * KingWeight;
+            }
+            else
+            {
+                List<SimpleChess.Move> moves = board.generateMoves(location);
+                int moveCount = moves.Count;
+                foreach (SimpleChess.Move move in moves)
+                {
+                    int hitPiece = board.testSpace(move.to);
+                    int centerIndex = System.Math.Min(System.Math.Abs(4 - move.to.x), System.Math.Abs(3 - move.to.x)) + System.Math.Min(System.Math.Abs(4 - move.to.y), System.Math.Abs(3 - move.to.y));
+                    if (piece * color > 0)
+                    {
+                        fitness += pieceValue[System.Math.Abs(hitPiece)] * PressureWeight;
+                        if (centerIndex <= 2)
+                        {
+                            fitness += (3 - centerIndex) * CenterWeight * (1 / 3);
+                        }
+                    }
+                    else
+                    {
+                        fitness -= pieceValue[System.Math.Abs(hitPiece)] * PressureWeight;
+                        if (centerIndex <= 2)
+                        {
+                            fitness -= (3 - centerIndex) * CenterWeight * (1 / 3);
+                        }
+                    }
+                }
+                if (piece * color > 0)
+                {
+                    fitness += pieceValue[System.Math.Abs(piece)] * PieceWeight / 47f;
+                    fitness += moveCount * DevelopmentWeight;
+
+                }
+                else
+                {
+                    fitness -= pieceValue[System.Math.Abs(piece)] * PieceWeight / 47;
+                    fitness -= moveCount * DevelopmentWeight;
+                }
+            }
+
+        }
+        return fitness;
     }
 }
