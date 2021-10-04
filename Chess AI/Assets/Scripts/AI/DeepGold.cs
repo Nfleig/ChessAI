@@ -42,6 +42,8 @@ public class DeepGold : MonoBehaviour
     public bool rollingEvaluation = false;
     public Gene gene;
 
+    public static int[] pieceValue = { 0, 1, 3, 4, 4, 7, 10 };
+
     void Awake()
     {
         AI = new ChessAI(simulatedTurns, color, grainSize, PieceWeight, CenterWeight, DevelopmentWeight, PressureWeight, KingWeight, PawnWeight);
@@ -118,7 +120,7 @@ public class DeepGold : MonoBehaviour
                 if(moveNum == calcMoves.Count - failedTasks)
                 {
                     print(failedTasks + " Tasks failed!");
-                    thinking = false;
+                    //thinking = false;
                 }
             }
         }
@@ -306,19 +308,46 @@ public class DeepGold : MonoBehaviour
     }
 
     //Fitness algorithm based on chess board evaluation guide at https://chessfox.com/example-of-the-complete-evaluation-process-of-chess-a-chess-position/
+    
+    public float testFitness(SimpleChess board)
+    {
+        float fitness = 0;
+        List<SimpleChess.Coordinate> newBoard = new List<SimpleChess.Coordinate>(board.getPieces(1));
+        newBoard.AddRange(board.getPieces(-1));
+        foreach(SimpleChess.Coordinate location in newBoard)
+        {
+            if(board.testSpace(location) > 0)
+            {
+                fitness++;
+            }
+            else if(board.testSpace(location) < 0)
+            {
+                fitness++;
+            }
+            else
+            {
+                print("found 0");
+            }
+        }
+        return fitness;
+    }
+
     public float CalculateFitness(SimpleChess board)
     {
+        //print("Start");
         float fitness = 0;
         List<SimpleChess.Coordinate> newBoard = new List<SimpleChess.Coordinate>(board.getPieces(1));
         newBoard.AddRange(board.getPieces(-1));
         foreach (SimpleChess.Coordinate location in newBoard)
         {
             int piece = board.testSpace(location);
-            if (System.Math.Abs(piece) > 6 && piece != 0)
+            //print(piece);
+            if (Math.Abs(piece) > 6)
             {
+                print(piece);
                 continue;
             }
-            if (System.Math.Abs(piece) == 1)
+            if (Math.Abs(piece) == 1)
             {
                 int pawnScore = 0;
                 if (board.isThreatened(location, color))
@@ -367,10 +396,14 @@ public class DeepGold : MonoBehaviour
                 foreach (SimpleChess.Move move in moves)
                 {
                     int hitPiece = board.testSpace(move.to);
+                    if(Math.Abs(hitPiece) > 6)
+                    {
+                        continue;
+                    }
                     int centerIndex = System.Math.Min(System.Math.Abs(4 - move.to.x), System.Math.Abs(3 - move.to.x)) + System.Math.Min(System.Math.Abs(4 - move.to.y), System.Math.Abs(3 - move.to.y));
                     if (piece * color > 0)
                     {
-                        fitness += pieceValue[System.Math.Abs(hitPiece)] * PressureWeight;
+                        fitness += pieceValue[Math.Abs(hitPiece)] * PressureWeight;
                         if (centerIndex <= 2)
                         {
                             fitness += (3 - centerIndex) * CenterWeight * (1 / 3);
@@ -378,7 +411,7 @@ public class DeepGold : MonoBehaviour
                     }
                     else
                     {
-                        fitness -= pieceValue[System.Math.Abs(hitPiece)] * PressureWeight;
+                        fitness -= pieceValue[Math.Abs(hitPiece)] * PressureWeight;
                         if (centerIndex <= 2)
                         {
                             fitness -= (3 - centerIndex) * CenterWeight * (1 / 3);
@@ -387,18 +420,19 @@ public class DeepGold : MonoBehaviour
                 }
                 if (piece * color > 0)
                 {
-                    fitness += pieceValue[System.Math.Abs(piece)] * PieceWeight / 47f;
+                    fitness += pieceValue[Math.Abs(piece)] * PieceWeight / 47f;
                     fitness += moveCount * DevelopmentWeight;
 
                 }
                 else
                 {
-                    fitness -= pieceValue[System.Math.Abs(piece)] * PieceWeight / 47;
+                    fitness -= pieceValue[Math.Abs(piece)] * PieceWeight / 47;
                     fitness -= moveCount * DevelopmentWeight;
                 }
             }
 
         }
+        //print("End");
         return fitness;
     }
 }

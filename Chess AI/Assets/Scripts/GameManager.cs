@@ -158,7 +158,10 @@ public class GameManager : MonoBehaviour
                 winner = -1;
             }
             gameFinished = true;
-            console.text = "Checkmate";
+            if (console)
+            {
+                console.text = "Checkmate";
+            }
             //EndGame();
         }
         if(allMoves.Count > 10)
@@ -168,7 +171,10 @@ public class GameManager : MonoBehaviour
                 if(allMoves[allMoves.Count - 2].Equals(allMoves[allMoves.Count - 6]) && allMoves[allMoves.Count - 2].Equals(allMoves[allMoves.Count - 10]))
                 {
                     gameFinished = true;
-                    console.text = "Draw by repetition";
+                    if (console)
+                    {
+                        console.text = "Draw by repetition";
+                    }
                 }
             }
         }
