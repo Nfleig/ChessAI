@@ -69,75 +69,40 @@ public class GameManager : MonoBehaviour
     {
         int intPiece = board.getPiece(move.from);
         board.movePiece(move);
-        //tester.text = board.getPiece(6, 0).ToString();
         allMoves.Add(move);
-        //board.criticalPieces = board.getCriticalPieces(System.Math.Sign(intPiece));
-        foreach (Piece piece in allPieces)
+        Piece piece = findPiece(move.from);
+        if (Mathf.Abs(intPiece) == 6)
         {
-            if(piece.x == move.from.x && piece.y == move.from.y)
+            if (move.from.x - move.to.x == 2)
             {
-                //print(piece.type);
-                if (Mathf.Abs(intPiece) == 6)
-                {
-                    if (move.from.x - move.to.x == 2)
-                    {
-                        makeMove(new SimpleChess.Move(new SimpleChess.Coordinate(0, move.to.y), new SimpleChess.Coordinate(3, move.to.y)));
-                        turn--;
-                    }
-                    else if (move.from.x - move.to.x == -2)
-                    {
-                        makeMove(new SimpleChess.Move(new SimpleChess.Coordinate(7, move.to.y), new SimpleChess.Coordinate(5, move.to.y)));
-                        turn--;
-                    }
-                }
-                piece.x = move.to.x;
-                piece.y = move.to.y;
-                //piece.showingMoves = false;
-                
-                if(Mathf.Abs(intPiece) == 1)
-                {
-                    Piece passent = piece.getPiece(new SimpleChess.Coordinate(move.to.x, move.to.y - intPiece));
-                    if (passent && doubleMovedPawns.Contains(passent))
-                    {
-                        passent.capturePiece(passent);
-                    }
-                    doubleMovedPawns.Clear();
-                    if (Mathf.Abs(move.from.y - move.to.y) == 2)
-                    {
-                        doubleMovedPawns.Add(piece);
-                    }
-                    /*
-                    if(move.to.y == 7)
-                    {
-                        Piece newQueen = Instantiate(Pieces[board.getPiece(move.to) - 1], piece.transform).GetComponent<Piece>();
-                        newQueen.transform.parent = transform.parent;
-                        newQueen.transform.localScale = allPieces[0].transform.localScale;
-                        newQueen.manager = this;
-                        addPiece(newQueen);
-                        removePiece(piece);
-                        Destroy(piece.gameObject);
-                        newQueen.x = move.to.x;
-                        newQueen.y = move.to.y;
-                    }
-                    if(move.to.y == 0)
-                    {
-                        Piece newQueen = Instantiate(Pieces[System.Math.Abs(board.getPiece(move.to)) + 5], piece.transform).GetComponent<Piece>();
-                        newQueen.transform.parent = transform.parent;
-                        newQueen.transform.localScale = allPieces[0].transform.localScale;
-                        addPiece(newQueen);
-                        removePiece(piece);
-                        Destroy(piece.gameObject);
-                        newQueen.x = move.to.x;
-                        newQueen.y = move.to.y;
-                    }
-                    */
-                }
-                else
-                {
-                    doubleMovedPawns.Clear();
-                }
-                break;
+                Piece rook = findPiece(0, move.to.y);
+                rook.x = 3;
             }
+            else if (move.from.x - move.to.x == -2)
+            {
+                Piece rook = findPiece(7, move.to.y);
+                rook.x = 5;
+            }
+        }
+        piece.x = move.to.x;
+        piece.y = move.to.y;
+                
+        if(Mathf.Abs(intPiece) == 1)
+        {
+            Piece passent = piece.getPiece(new SimpleChess.Coordinate(move.to.x, move.to.y - intPiece));
+            if (passent && doubleMovedPawns.Contains(passent))
+            {
+                passent.capturePiece(passent);
+            }
+            doubleMovedPawns.Clear();
+            if (Mathf.Abs(move.from.y - move.to.y) == 2)
+            {
+                doubleMovedPawns.Add(piece);
+            }
+        }
+        else
+        {
+            doubleMovedPawns.Clear();
         }
         if (intPiece < 0)
         {
@@ -162,7 +127,6 @@ public class GameManager : MonoBehaviour
             {
                 console.text = "Checkmate";
             }
-            //EndGame();
         }
         if(allMoves.Count > 10)
         {
@@ -181,6 +145,22 @@ public class GameManager : MonoBehaviour
         board.updateCheck();
         turn++;
         turnFinished = true;
+    }
+
+    public Piece findPiece(SimpleChess.Coordinate location)
+    {
+        return findPiece(location.x, location.y);
+    }
+    public Piece findPiece(int x, int y)
+    {
+        foreach(Piece piece in allPieces)
+        {
+            if(piece.x == x && piece.y == y)
+            {
+                return piece;
+            }
+        }
+        return null;
     }
     public void Toggle(DeepGold ai)
     {
