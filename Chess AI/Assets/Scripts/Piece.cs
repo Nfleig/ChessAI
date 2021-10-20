@@ -46,6 +46,7 @@ public class Piece : MonoBehaviour
                 {
                     marker.SetActive(false);
                 }
+                showingMoves = false;
             }
             wasClicked = false;
         }
