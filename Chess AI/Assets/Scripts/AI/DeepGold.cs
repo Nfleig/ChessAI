@@ -161,6 +161,10 @@ public class DeepGold : MonoBehaviour
 
                 }
                 manager.makeMove(calcMoves[0].lastMove);
+                if (calcMoves[0].lastMove.promotion != 0)
+                {
+                    manager.promotePiece(calcMoves[0].lastMove.to.x, calcMoves[0].lastMove.to.y, calcMoves[0].lastMove.promotion);
+                }
             }
         }
     }
@@ -221,7 +225,8 @@ public class DeepGold : MonoBehaviour
         timer.Start();
         moveNum = 0;
         currentBoard = new SimpleChess(manager.board);
-        calcMoves = generateMoves(manager.board, color);
+        currentBoard.setAIControlled(true);
+        calcMoves = generateMoves(currentBoard, color);
         started = true;
         bestLines = new List<List<string>>(calcMoves.Count);
         if (manager.turn == 1 && randomFirstMove)
