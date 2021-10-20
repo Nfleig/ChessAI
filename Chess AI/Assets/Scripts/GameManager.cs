@@ -227,6 +227,7 @@ public class GameManager : MonoBehaviour
             BAI.gameObject.SetActive(true);
         }
         gameFinished = false;
+        isPaused = false;
     }
     
     public void promotePiece(int x, int y, int promotion)
