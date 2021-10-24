@@ -106,11 +106,11 @@ public class GameManager : MonoBehaviour
         }
         if (intPiece < 0)
         {
-            BPreviousMove.text = "Previous Move: " + SimpleChess.toChessNotation(board, displayLetters);
+            BPreviousMove.text = "Previous Move: " + SimpleChess.toChessNotation(board, BAI.displayLetters);
         }
         else
         {
-            WPreviousMove.text = "Previous Move: " + SimpleChess.toChessNotation(board, displayLetters);
+            WPreviousMove.text = "Previous Move: " + SimpleChess.toChessNotation(board, WAI.displayLetters);
         }
         if (board.generateMoves(-System.Math.Sign(intPiece)).Count == 0)
         {
@@ -264,11 +264,11 @@ public class GameManager : MonoBehaviour
 
                 if (y == 0)
                 {
-                    BPreviousMove.text = "Previous Move: " + SimpleChess.toChessNotation(board, displayLetters);
+                    BPreviousMove.text = "Previous Move: " + SimpleChess.toChessNotation(board, BAI.displayLetters);
                 }
                 else
                 {
-                    WPreviousMove.text = "Previous Move: " + SimpleChess.toChessNotation(board, displayLetters);
+                    WPreviousMove.text = "Previous Move: " + SimpleChess.toChessNotation(board, WAI.displayLetters);
                 }
                 break;
             }

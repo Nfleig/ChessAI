@@ -33,13 +33,14 @@ public class DeepGold : MonoBehaviour
     public float KingWeight;
     public float PawnWeight;
     public float PawnAdvancementWeight;
-    private bool displayLetters;
+    public bool displayLetters;
 
     List<SimpleChess> calcMoves;
     int moveNum = 0;
     public bool started = false;
     public bool randomFirstMove = false;
     public bool rollingEvaluation = false;
+    private bool isActive = false;
     public Gene gene;
 
     public static int[] pieceValue = { 0, 1, 3, 4, 4, 7, 10 };
@@ -49,7 +50,7 @@ public class DeepGold : MonoBehaviour
         AI = new ChessAI(simulatedTurns, color, grainSize, PieceWeight, CenterWeight, DevelopmentWeight, PressureWeight, KingWeight, PawnWeight);
         AI.setFitnessAlgorithm(CalculateFitness);
         turnTimer = turnDelay;
-        displayLetters = manager.displayLetters;
+        makeGene(true);
     }
     private void OnDisable()
     {
@@ -98,7 +99,7 @@ public class DeepGold : MonoBehaviour
     
     void Update()
     {
-        if (manager.getPaused())
+        if (manager.getPaused() || !isActive)
         {
             return;
         }
@@ -126,7 +127,7 @@ public class DeepGold : MonoBehaviour
         }
         if (started && (manager.turn % 2 == 0) == (color == -1))
         {
-            if (manager.turn == 1 && randomFirstMove)
+            if (manager.turn < 3 && randomFirstMove)
             {
                 int randIndex = UnityEngine.Random.Range(0, calcMoves.Count - 1);
                 //PreviousMove.text = "Previous move: " + toChessNotation(calcMoves[randIndex]);
@@ -214,6 +215,26 @@ public class DeepGold : MonoBehaviour
         thinking = false;
         moveNum = 0;
     }
+
+    public bool getActive()
+    {
+        return isActive;
+    }
+
+    public void Activate(bool active)
+    {
+        this.isActive = active;
+        if(isActive)
+        {
+            StartAI();
+        }
+        else
+        {
+            Stop();
+        }
+    }
+
+
     Stopwatch timer = new Stopwatch();
     List<Task> tasks = new List<Task>();
     List<AIState> states = new List<AIState>();
@@ -229,7 +250,7 @@ public class DeepGold : MonoBehaviour
         calcMoves = generateMoves(currentBoard, color);
         started = true;
         bestLines = new List<List<string>>(calcMoves.Count);
-        if (manager.turn == 1 && randomFirstMove)
+        if (manager.turn < 3 && randomFirstMove)
         {
             return;
         }
@@ -270,6 +291,29 @@ public class DeepGold : MonoBehaviour
         KingWeight = gene.Weights[4];
         PawnWeight = gene.Weights[5];
         AI.setWeights(PieceWeight, CenterWeight, DevelopmentWeight, PressureWeight, KingWeight, PawnWeight);
+    }
+
+    public Gene makeGene(bool setGene)
+    {
+        Gene gene = new Gene();
+        gene.Weights.Add(PieceWeight);
+        gene.Weights.Add(CenterWeight);
+        gene.Weights.Add(DevelopmentWeight);
+        gene.Weights.Add(PressureWeight);
+        gene.Weights.Add(KingWeight);
+        gene.Weights.Add(PawnWeight);
+        if (setGene)
+        {
+            this.gene = gene;
+            setWeights(gene);
+        }
+        return gene;
+    }
+
+    public void setSimulatedTurns(int simulatedTurns)
+    {
+        AI.simulatedTurns = simulatedTurns;
+        this.simulatedTurns = simulatedTurns;
     }
 
     float CalculateEndgameFitness(SimpleChess board)

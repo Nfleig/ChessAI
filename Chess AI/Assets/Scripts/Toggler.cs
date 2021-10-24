@@ -5,16 +5,24 @@ using UnityEngine.UI;
 
 public class Toggler : MonoBehaviour
 {
-    public GameObject to;
+    public DeepGold to;
     private Text text;
     public void Awake()
     {
         text = transform.GetChild(0).GetComponent<Text>();
+        if (to.getActive())
+        {
+            text.text = "Stop AI";
+        }
+        else
+        {
+            text.text = "Start AI";
+        }
     }
     public void Toggle()
     {
-        to.SetActive(!to.activeSelf);
-        if (to.activeSelf)
+        to.Activate(!to.getActive());
+        if (to.getActive())
         {
             text.text = "Stop AI";
         }

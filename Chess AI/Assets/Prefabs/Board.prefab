@@ -231,6 +231,7 @@ MonoBehaviour:
   turn: 1
   WPreviousMove: {fileID: 1540672495361670744}
   BPreviousMove: {fileID: 1540672495140115255}
+  console: {fileID: 0}
   BPromotionMenu: {fileID: 3661353460634706948, guid: 3044e878b0bb08a45a49cf3c083b825c,
     type: 3}
   WPromotionMenu: {fileID: 3661353460634706948, guid: 8d7a161e4126f7b4789578b45dca9953,
@@ -859,7 +860,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9035aad7cba7f94485356c206fff227, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  to: {fileID: 1540672495987867336}
+  to: {fileID: 1540672495987867342}
 --- !u!1 &1540672495532631048
 GameObject:
   m_ObjectHideFlags: 0
@@ -1315,8 +1316,11 @@ MonoBehaviour:
   PressureWeight: 10
   KingWeight: 10
   PawnWeight: 10
+  PawnAdvancementWeight: 0
   started: 0
   randomFirstMove: 0
+  rollingEvaluation: 0
+  isActive: 0
   gene:
     Weights: []
     fitness: 0
@@ -1565,8 +1569,11 @@ MonoBehaviour:
   PressureWeight: 10
   KingWeight: 10
   PawnWeight: 10
+  PawnAdvancementWeight: 0
   started: 0
   randomFirstMove: 0
+  rollingEvaluation: 0
+  isActive: 0
   gene:
     Weights: []
     fitness: 0
@@ -1906,7 +1913,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9035aad7cba7f94485356c206fff227, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  to: {fileID: 1540672495851989088}
+  to: {fileID: 1540672495851989094}
 --- !u!1 &8848645454271646968
 GameObject:
   m_ObjectHideFlags: 0

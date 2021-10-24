@@ -13,6 +13,7 @@ TagManager:
   - AI
   - IgnoreTouch
   - Marker
+  - Menu
   layers:
   - Default
   - TransparentFX

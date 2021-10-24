@@ -12,16 +12,18 @@ public class Gene
     public List<float> Weights = new List<float>();
     public float fitness = 0;
 
+    public Gene()
+    {
+        this.Weights = new List<float>();
+    }
 
     public Gene(List<float> Weights)
     {
         this.Weights = Weights;
-        fitness = 0;
     }
     public Gene(Gene parent)
     {
         this.Weights = new List<float>(parent.Weights);
-        fitness = 0;
     }
 }
 
