@@ -25,6 +25,7 @@ public class DeepGold : MonoBehaviour
     public TextMesh MoveCounter;
     public TextMesh NodeCounter;
     public TextMesh PreviousMove;
+    public TextMesh NodeSpeed;
     public ChessAI AI;
     public float PieceWeight;
     public float CenterWeight;
@@ -96,7 +97,6 @@ public class DeepGold : MonoBehaviour
         }
         return line;
     }
-    
     void Update()
     {
         if (manager.getPaused() || !isActive)
@@ -141,9 +141,15 @@ public class DeepGold : MonoBehaviour
                 if (moveNum == calcMoves.Count && rollingEvaluation)
                 {
                     moveNum = 0;
-                    foreach(Task task in tasks)
+                    tasks.Clear();
+                    foreach(AIState state in states)
                     {
-
+                        Task calcTask = Task.Factory.StartNew(() => {
+                            AI.IterativeDeepening(state, token);
+                            /*print("finished move " + moveNum);*/
+                            Interlocked.Increment(ref moveNum);
+                        }, token);
+                        tasks.Add(calcTask);
                     }
                 }
                 MoveCounter.text = "Calculating move " + (moveNum + 1) + " / " + (calcMoves.Count) + ":\n" + SimpleChess.toChessNotation(calcMoves[moveNum], displayLetters);
@@ -166,6 +172,9 @@ public class DeepGold : MonoBehaviour
                 {
                     manager.promotePiece(calcMoves[0].lastMove.to.x, calcMoves[0].lastMove.to.y, calcMoves[0].lastMove.promotion);
                 }
+                float time = (float) timer.ElapsedMilliseconds / 1000;
+                int nps = (int) (AI.getNodeCount() / time);
+                NodeSpeed.text = "Average speed:\n" + nps + " Nodes per second";
             }
         }
     }
@@ -264,6 +273,7 @@ public class DeepGold : MonoBehaviour
             if (rollingEvaluation)
             {
                 AIState state = new AIState(move, AI.CalculateFitness(move));
+                states.Add(state);
                 calcTask = Task.Factory.StartNew(() => {
                     AI.IterativeDeepening(state, token);
                     /*print("finished move " + moveNum);*/
