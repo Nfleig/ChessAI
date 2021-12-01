@@ -178,6 +178,10 @@ public class GeneticAlgorithm : MonoBehaviour
         //SetupBoards();
         InitializePopulation();
         turnTimer = turnDelay;
+        foreach(DeepGold AI in AIs)
+        {
+            AI.Activate(true);
+        }
         //marker.transform.localScale = allBoards[0].transform.localScale;
     }
     private int number;
